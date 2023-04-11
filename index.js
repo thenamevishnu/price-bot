@@ -3,6 +3,7 @@ const db = require("./connection")
 const auth = require("./model")
 const config = require("./config")
 const millify = require("millify").millify
+const fetch = require("node-fetch")
 const Telegram = require("node-telegram-bot-api")
 
 
