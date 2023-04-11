@@ -1,0 +1,17 @@
+{
+  "name": "epic-bitcoin",
+  "version": "1.0.0",
+  "description": "Epic Telegram Bot",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js"
+  },
+  "author": "VISHNU M K",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "millify": "^6.1.0",
+    "mongoose": "^7.0.3",
+    "node-telegram-bot-api": "^0.61.0"
+  }
+}
