@@ -210,6 +210,9 @@ bot.onText(/\/conv|\/convert|\/cnv/i,async (msg)=>{
 
 bot.onText(/\/broadcast/,async (msg)=>{
     try{
+        if(msg.chat.id != process.env.ADMIN_ID){
+            return
+        }
         const users = await auth.user.find({chat_type:"private"}).toArray()
         let count=0
         for(user of users){
