@@ -103,6 +103,7 @@ bot.onText(/\/p|\/price/i,async (msg)=>{
         return
     }catch(error){
         console.log(error);
+        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html"});
         bot.answerCallbackQuery(msg.id, {text: `<i>❌ Error Happend!</i>`})
         bot.sendMessage(process.env.ADMIN_ID,`<b>❌ Error Happend!\n\nCommand /p or /price\nBy : <a href="tg://user?id=${msg.chat.id}">${msg.chat.first_name}</a></b>`,{parse_mode:"html",disable_web_page_preview:true})
         return
@@ -154,6 +155,7 @@ bot.onText(/\/conv|\/convert|\/cnv/i,async (msg)=>{
         return
     }catch(error){
         console.log(error);
+        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html"});
         bot.answerCallbackQuery(msg.id, {text: `<i>❌ Error Happend!</i>`})
         bot.sendMessage(process.env.ADMIN_ID,`<b>❌ Error Happend!\n\nCommand /convert or /conv or /cnv\nBy : <a href="tg://user?id=${msg.chat.id}">${msg.chat.first_name}</a></b>`,{parse_mode:"html",disable_web_page_preview:true})
         return
@@ -194,6 +196,7 @@ bot.onText(/\/mp|\/multi|\/multiple/,async (msg)=>{
         return
     }catch(error){
         console.log(error);
+        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html"});
         bot.sendMessage(process.env.ADMIN_ID,`<b>❌ Error Happend!\n\nCommand /mp or /multi or /multiple\nBy : <a href="tg://user?id=${msg.chat.id}">${msg.chat.first_name}</a></b>`,{parse_mode:"html",disable_web_page_preview:true})
         return
     }
@@ -259,6 +262,7 @@ bot.on("callback_query",async (msg)=>{
             return
         }catch(error){
             console.log(error)
+            bot.sendMessage(msg.message.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html"});
             bot.answerCallbackQuery(msg.id, {text: `❌ Error Happend!`})
             bot.sendMessage(process.env.ADMIN_ID,`<b>❌ Error Happend!\n\nCommand /p or /price callback\nBy : <a href="tg://user?id=${msg.message.chat.id}">${msg.message.chat.first_name}</a></b>`,{parse_mode:"html",disable_web_page_preview:true})
             return
