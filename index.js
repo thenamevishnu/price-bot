@@ -110,51 +110,6 @@ bot.onText(/\/p|\/price/i,async (msg)=>{
     
 })
 
-
-bot.on("callback_query",async (msg)=>{
-    const action = msg.data.split(" ")
-
-    if(action[0]=="/p"){
-        try{
-            let timer = await auth.user.findOne({chat_id:msg.message.chat.id})
-            let now = Math.floor(new Date().getTime()/1000)
-            let sec =timer.timer - now
-            if(sec >= 0){
-                bot.answerCallbackQuery(msg.id, {text: `Wait ${sec} seconds!`})
-                return
-            }
-            let amt = action[1]
-            let fr = action[2]
-            let to = action[3]
-            let response = await fetch(`https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${fr}&tsyms=${to}`)
-            let result = await response.json()
-            result = result["RAW"][fr][to]
-            const TOT_PRICE = (amt * result.PRICE).toFixed(6)
-            const HIGH24HOUR = result.HIGH24HOUR.toFixed(3)
-            const LOW24HOUR = result.LOW24HOUR.toFixed(3)
-            const CHANGEPCTHOUR = result.CHANGEPCTHOUR.toFixed(2)
-            const CHANGEPCT24HOUR = result.CHANGEPCT24HOUR.toFixed(2)
-            const MKTCAP = millify(result.MKTCAP, {
-                precision: 2
-            });
-            const SUPPLY = millify(result.SUPPLY, {
-                precision: 2
-            });
-            const text = `<code>${amt} ${fr}: ${TOT_PRICE} ${to}\nHIGH 24H: ${HIGH24HOUR}  ${to}\nLOW 24H: ${LOW24HOUR}  ${to}\n1H: ${CHANGEPCTHOUR}%\n24H: ${CHANGEPCT24HOUR}%\nM-CAP: ${MKTCAP}  ${to}\nSUPPLY: ${SUPPLY}  ${fr}</code>\n<b><a href='${ads.url}'>${ads.text}</a></b>`
-            const key = [[{"text":"🔄 Refresh","callback_data":`/p ${amt} ${fr} ${to}`}]]
-            bot.editMessageText(text,{chat_id:msg.message.chat.id,message_id:msg.message.message_id,reply_markup:{inline_keyboard:key},parse_mode:"html",disable_web_page_preview:true})
-            let newtimer = Math.floor(new Date().getTime()/1000)
-            await auth.user.updateOne({chat_id:msg.message.chat.id},{$set:{timer:newtimer+60}})
-            return
-        }catch(error){
-            console.log(error)
-            bot.answerCallbackQuery(msg.id, {text: `❌ Error Happend!`})
-            bot.sendMessage(process.env.ADMIN_ID,`<b>❌ Error Happend!\n\nCommand /p or /price callback\nBy : <a href="tg://user?id=${msg.message.chat.id}">${msg.message.chat.first_name}</a></b>`,{parse_mode:"html",disable_web_page_preview:true})
-            return
-        }
-    }
-})
-
 bot.onText(/\/conv|\/convert|\/cnv/i,async (msg)=>{
     try{
         let data = msg.text;
@@ -206,7 +161,43 @@ bot.onText(/\/conv|\/convert|\/cnv/i,async (msg)=>{
     
 })
 
-
+bot.onText(/\/mp|\/multi|\/multiple/,async (msg)=>{
+    try{
+        if(msg.text=="/mp" || msg.text=="/multi" || msg.text=="/multiple"){
+            coin="BTC,ETH"
+        }else{
+            coin = msg.text.toLocaleUpperCase().replace(/\s+/gm," ").split(" ")
+            coin.shift()
+            coin=coin.join(",")
+        }
+        amt=1
+        const data = await fetch(`https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${coin}&tsyms=USDT`)
+        let response = await data.json()
+        let array = coin.split(",")
+        let text="<b>MULTIPLE PRICES</b>\n"
+        for(key of array){
+            result = response["RAW"][key]["USDT"]
+            const TOT_PRICE = (amt * result.PRICE).toFixed(6)
+            const HIGH24HOUR = result.HIGH24HOUR.toFixed(3)
+            const LOW24HOUR = result.LOW24HOUR.toFixed(3)
+            const CHANGEPCTHOUR = result.CHANGEPCTHOUR.toFixed(2)
+            const CHANGEPCT24HOUR = result.CHANGEPCT24HOUR.toFixed(2)
+            const MKTCAP = millify(result.MKTCAP, {
+                precision: 2
+            });
+            const SUPPLY = millify(result.SUPPLY, {
+                precision: 2
+            });
+            text += `<code>\n${amt} ${key}: ${TOT_PRICE} USDT\nHIGH 24H: ${HIGH24HOUR}  USDT\nLOW 24H: ${LOW24HOUR}  USDT\n1H: ${CHANGEPCTHOUR}%\n24H: ${CHANGEPCT24HOUR}%\nM-CAP: ${MKTCAP}  USDT\nSUPPLY: ${SUPPLY}  ${key}</code>\n`
+        }
+        bot.sendMessage(msg.chat.id,`${text}<b><a href="${ads.url}">${ads.text}</a></b>`,{parse_mode:"html",disable_web_page_preview:true})
+        return
+    }catch(error){
+        console.log(error);
+        bot.sendMessage(process.env.ADMIN_ID,`<b>❌ Error Happend!\n\nCommand /mp or /multi or /multiple\nBy : <a href="tg://user?id=${msg.chat.id}">${msg.chat.first_name}</a></b>`,{parse_mode:"html",disable_web_page_preview:true})
+        return
+    }
+})
 
 
 
@@ -226,5 +217,51 @@ bot.onText(/\/broadcast/,async (msg)=>{
         console.log(error);
         bot.sendMessage(process.env.ADMIN_ID,`<b>❌ Error Happend!\n\nCommand /broadcast\nBy : <a href="tg://user?id=${msg.chat.id}">${msg.chat.first_name}</a></b>`,{parse_mode:"html",disable_web_page_preview:true})
         return
+    }
+})
+
+
+
+bot.on("callback_query",async (msg)=>{
+    const action = msg.data.split(" ")
+
+    if(action[0]=="/p"){
+        try{
+            let timer = await auth.user.findOne({chat_id:msg.message.chat.id})
+            let now = Math.floor(new Date().getTime()/1000)
+            let sec =timer.timer - now
+            if(sec >= 0){
+                bot.answerCallbackQuery(msg.id, {text: `Wait ${sec} seconds!`})
+                return
+            }
+            let amt = action[1]
+            let fr = action[2]
+            let to = action[3]
+            let response = await fetch(`https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${fr}&tsyms=${to}`)
+            let result = await response.json()
+            result = result["RAW"][fr][to]
+            const TOT_PRICE = (amt * result.PRICE).toFixed(6)
+            const HIGH24HOUR = result.HIGH24HOUR.toFixed(3)
+            const LOW24HOUR = result.LOW24HOUR.toFixed(3)
+            const CHANGEPCTHOUR = result.CHANGEPCTHOUR.toFixed(2)
+            const CHANGEPCT24HOUR = result.CHANGEPCT24HOUR.toFixed(2)
+            const MKTCAP = millify(result.MKTCAP, {
+                precision: 2
+            });
+            const SUPPLY = millify(result.SUPPLY, {
+                precision: 2
+            });
+            const text = `<code>${amt} ${fr}: ${TOT_PRICE} ${to}\nHIGH 24H: ${HIGH24HOUR}  ${to}\nLOW 24H: ${LOW24HOUR}  ${to}\n1H: ${CHANGEPCTHOUR}%\n24H: ${CHANGEPCT24HOUR}%\nM-CAP: ${MKTCAP}  ${to}\nSUPPLY: ${SUPPLY}  ${fr}</code>\n<b><a href='${ads.url}'>${ads.text}</a></b>`
+            const key = [[{"text":"🔄 Refresh","callback_data":`/p ${amt} ${fr} ${to}`}]]
+            bot.editMessageText(text,{chat_id:msg.message.chat.id,message_id:msg.message.message_id,reply_markup:{inline_keyboard:key},parse_mode:"html",disable_web_page_preview:true})
+            let newtimer = Math.floor(new Date().getTime()/1000)
+            await auth.user.updateOne({chat_id:msg.message.chat.id},{$set:{timer:newtimer+60}})
+            return
+        }catch(error){
+            console.log(error)
+            bot.answerCallbackQuery(msg.id, {text: `❌ Error Happend!`})
+            bot.sendMessage(process.env.ADMIN_ID,`<b>❌ Error Happend!\n\nCommand /p or /price callback\nBy : <a href="tg://user?id=${msg.message.chat.id}">${msg.message.chat.first_name}</a></b>`,{parse_mode:"html",disable_web_page_preview:true})
+            return
+        }
     }
 })
