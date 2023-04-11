@@ -4,6 +4,7 @@ const auth = require("./model")
 const config = require("./config")
 const millify = require("millify").millify
 const Telegram = require("node-telegram-bot-api")
+const fetch = require("node-fetch");
 
 const bot = new Telegram(process.env.BOT_TOKEN,{polling:true})
 
