@@ -16,7 +16,7 @@ let rand = (min, max) => {
 }
 let ads = config.ADS[rand(0,0)]
 
-bot.onText(/\/start/,async (msg)=>{
+bot.onText(/\/start/i,async (msg)=>{
     try{
         const chat_id = msg.chat.id
         const text = `<b>Hi ${msg.chat.first_name} 👋
@@ -39,8 +39,7 @@ bot.onText(/\/start/,async (msg)=>{
         }
         return
     }catch(error){
-        console.log(error);
-        bot.sendMessage(process.env.ADMIN_ID,`<b>❌ Error Happend!\n\nCommand /broadcast\nBy : <a href="tg://user?id=${msg.chat.id}">${msg.chat.first_name}</a></b>`,{parse_mode:"html",disable_web_page_preview:true})
+        console.log(error)
         bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html"});
         return
     }
@@ -48,7 +47,7 @@ bot.onText(/\/start/,async (msg)=>{
 
 bot.onText(/\/p|\/price/i,async (msg)=>{
     try{
-        let data = msg.text;
+        let data = msg.text.toLocaleLowerCase();
         let coin
         if(data == "/p" || data == "/price"){
             coin = [1,"BTC","USDT"]
@@ -104,8 +103,6 @@ bot.onText(/\/p|\/price/i,async (msg)=>{
     }catch(error){
         console.log(error);
         bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html"});
-        bot.answerCallbackQuery(msg.id, {text: `<i>❌ Error Happend!</i>`})
-        bot.sendMessage(process.env.ADMIN_ID,`<b>❌ Error Happend!\n\nCommand /p or /price\nBy : <a href="tg://user?id=${msg.chat.id}">${msg.chat.first_name}</a></b>`,{parse_mode:"html",disable_web_page_preview:true})
         return
     }
     
@@ -113,9 +110,9 @@ bot.onText(/\/p|\/price/i,async (msg)=>{
 
 bot.onText(/\/conv|\/convert|\/cnv/i,async (msg)=>{
     try{
-        let data = msg.text;
+        let data = msg.text.toLocaleLowerCase();
         let coin
-        if(data == "/p" || data == "/price"){
+        if(data == "/conv" || data == "/convert" || data == "/conv"){
             coin = [1,"BTC","USDT"]
         }else{
             coin = data.toLocaleUpperCase().replace(/\s+/gm," ").split(" ")
@@ -156,19 +153,18 @@ bot.onText(/\/conv|\/convert|\/cnv/i,async (msg)=>{
     }catch(error){
         console.log(error);
         bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html"});
-        bot.answerCallbackQuery(msg.id, {text: `<i>❌ Error Happend!</i>`})
-        bot.sendMessage(process.env.ADMIN_ID,`<b>❌ Error Happend!\n\nCommand /convert or /conv or /cnv\nBy : <a href="tg://user?id=${msg.chat.id}">${msg.chat.first_name}</a></b>`,{parse_mode:"html",disable_web_page_preview:true})
         return
     }
     
 })
 
-bot.onText(/\/mp|\/multi|\/multiple/,async (msg)=>{
+bot.onText(/\/mp|\/multi|\/multiple/i,async (msg)=>{
     try{
-        if(msg.text=="/mp" || msg.text=="/multi" || msg.text=="/multiple"){
+        let input = msg.text.toLocaleLowerCase()
+        if(input=="/mp" || input=="/multi" ||input=="/multiple"){
             coin="BTC,ETH"
         }else{
-            coin = msg.text.toLocaleUpperCase().replace(/\s+/gm," ").split(" ")
+            coin = input.toLocaleUpperCase().replace(/\s+/gm," ").split(" ")
             coin.shift()
             coin=coin.join(",")
         }
@@ -197,14 +193,28 @@ bot.onText(/\/mp|\/multi|\/multiple/,async (msg)=>{
     }catch(error){
         console.log(error);
         bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html"});
-        bot.sendMessage(process.env.ADMIN_ID,`<b>❌ Error Happend!\n\nCommand /mp or /multi or /multiple\nBy : <a href="tg://user?id=${msg.chat.id}">${msg.chat.first_name}</a></b>`,{parse_mode:"html",disable_web_page_preview:true})
         return
     }
 })
 
+bot.onText(/\/gas/i,async (msg)=>{
+    try{
+        const data = await fetch("https://ethgasstation.info/json/ethgasAPI.json")
+        const response = await data.json()
+        const safelow = parseInt(response.safeLow)/10;
+        const avg = parseInt(response.average)/10;
+        const fast = parseInt(response.fast)/10;
+        const fastest = parseInt(response.fastest)/10;
+        const text = `<b>🔆 Ethereum Gas Price\n🚁 Safe Low :</b> <code>${safelow} Gwei &lt; 30m</code>\n<b>✈️ Average :</b> <code>${avg} Gwei &lt; 5m</code>\n<b>🚀 Fast :</b> <code>${fast} Gwei &lt; 2m</code>\n<b>🛰️ Fastest :</b> <code>${fastest} Gwei &lt; 30s</code>\n<b><a href='${ads.url}'>${ads.text}</a></b>`
+        bot.sendMessage(msg.chat.id,text,{parse_mode:"html",disable_web_page_preview:true})
+        return;
+    }catch(error){
+        console.log(error);
+        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html"});
+    }
+})
 
-
-bot.onText(/\/broadcast/,async (msg)=>{
+bot.onText(/\/broadcast/i,async (msg)=>{
     try{
         if(msg.chat.id != process.env.ADMIN_ID){
             return
