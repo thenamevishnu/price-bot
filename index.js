@@ -19,9 +19,7 @@ let ads = config.ADS[rand(0,0)]
 bot.onText(/\/start/i,async (msg)=>{
     try{
         const chat_id = msg.chat.id
-        const text = `<b>Hi ${msg.chat.first_name} 👋
-        I am ${config.BOT_USERNAME}
-        I can help you get the crypto data just by command!</b>`
+        const text = `<b>Hi ${msg.chat.first_name} 👋\nI am ${config.BOT_USERNAME}\nI can help you get the crypto data just by command!\nNeed help ? /help</b>`
         const key = [[{"text":"➕ Add To Group","url":`https://telegram.me/${config.BOT_USERNAME}?startgroup=true`}]]
         bot.sendMessage(chat_id,text,{reply_markup:{inline_keyboard:key},parse_mode:"html"})
         const user = await auth.user.findOne({chat_id:msg.chat.id})
@@ -43,6 +41,17 @@ bot.onText(/\/start/i,async (msg)=>{
         bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html"});
         return
     }
+})
+
+bot.onText(/\/help/i,async (msg)=>{
+    if(msg.chat.type=="private"){
+        let text = `<code>=> /p | /price : Get price of coin\n=> /convert | /conv | /cnv : Convert coins\n=> /mp | /multiple | /multi : Get multiple prices\n=> /calc : Calculate prices</code>`
+        bot.sendMessage(msg.chat.id,text,{parse_mode:"html"})
+    }else{
+        let text = `<b><a href="https://t.me/${config.BOT_USERNAME}">Open me private</a></b>`
+        bot.sendMessage(msg.chat.id,text,{parse_mode:"html"})
+    }
+    return
 })
 
 bot.onText(/\/p|\/price/i,async (msg)=>{
@@ -214,6 +223,61 @@ bot.onText(/\/gas/i,async (msg)=>{
     }
 })
 
+bot.onText(/\/calc/,async (msg)=>{
+    try{
+        let data = msg.text.toLocaleLowerCase()
+        let amt
+        let coin
+        if(data=="/calc"){
+            amt = 1
+            coin = "BTC"
+        }else{
+            coin = data.toLocaleUpperCase().replace(/\s+/gm," ").split(" ")
+            coin.shift()
+            if(!coin[1]){
+                if(!isNaN(coin[0])){
+                    amt = parseFloat(coin[0])
+                    coin = "BTC"
+                }else{
+                    amt = 1
+                    coin = coin[0]
+                }
+            }else{
+                if(isNaN(coin[0]) && isNaN(coin[1])){
+                    amt = 1
+                    coin = coin[0]
+                }else if(isNaN(coin[0]) && !isNaN(coin[1])){
+                    amt = parseFloat(coin[1])
+                    coin = coin[0]
+                }else if(!isNaN(coin[0]) && isNaN(coin[1])){
+                    amt = parseFloat(coin[0])
+                    coin = coin[1]
+                }else if(!isNaN(coin[0]) && !isNaN(coin[1])){
+                    amt = parseFloat(coin[0])
+                    coin = "BTC"
+                }
+            }
+        }
+        let res = await fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${coin}&tsyms=USD,BTC,ETH,LTC,BNB,INR`)
+        let result = await res.json()
+        let amount = amt.toFixed(6)
+        let USD = (result[coin]["USD"]).toFixed(6)
+        let ETH = (result[coin]["ETH"]).toFixed(6)
+        let LTC = (result[coin]["LTC"]).toFixed(6)
+        let BNB = (result[coin]["BNB"]).toFixed(6)
+        let INR = (result[coin]["INR"]).toFixed(6)
+        let key = [[{"text":"▲ x2.0" , "callback_data":`/calc ${coin} ${amt} 2`},{"text":"🔄" , "callback_data":`/calc ${coin} ${amt} 1`},{"text":"▼ x0.5" , "callback_data":`/calc ${coin} ${amt} 0.5`}]]
+        let text = `<code>${amount} ${coin} = ?\n\nUSD : ${USD}\nETH : ${ETH}\nLTC : ${LTC}\nBNB : ${BNB}\nINR : ${INR}\n</code>\n<b><a href='${ads.url}'>${ads.text}</a></b>`;
+        bot.sendMessage(msg.chat.id,text,{reply_markup:{inline_keyboard:key},parse_mode:"html",disable_web_page_preview:true})
+        let timer = Math.floor(new Date().getTime()/1000)
+        await auth.user.updateOne({chat_id:msg.chat.id},{$set:{timer:timer+60}})
+        return
+    }catch(error){
+        console.log(error);
+        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html"});
+    }
+})
+
 bot.onText(/\/broadcast/i,async (msg)=>{
     try{
         if(msg.chat.id != process.env.ADMIN_ID){
@@ -278,4 +342,36 @@ bot.on("callback_query",async (msg)=>{
             return
         }
     }
+
+    if(action[0]=="/calc"){
+        try{
+            let coin = action[1]
+            let amt = parseFloat(action[2]) * parseFloat(action[3])
+            if(action[3]==1){
+                let timer = await auth.user.findOne({chat_id:msg.message.chat.id})
+                let now = Math.floor(new Date().getTime()/1000)
+                let sec =timer.timer - now
+                if(sec >= 0){
+                    bot.answerCallbackQuery(msg.id, {text: `Wait ${sec} seconds!`})
+                    return
+                }
+            }
+            let res = await fetch(`https://min-api.cryptocompare.com/data/pricemulti?fsyms=${coin}&tsyms=USD,BTC,ETH,LTC,BNB,INR`)
+            let result = await res.json()
+            let amount = amt.toFixed(6)
+            let USD = (result[coin]["USD"] * amount).toFixed(6)
+            let ETH = (result[coin]["ETH"] * amount).toFixed(6)
+            let LTC = (result[coin]["LTC"] * amount).toFixed(6)
+            let BNB = (result[coin]["BNB"] * amount).toFixed(6)
+            let INR = (result[coin]["INR"] * amount).toFixed(6)
+            let key = [[{"text":"▲ x2.0" , "callback_data":`/calc ${coin} ${amt} 2`},{"text":"🔄" , "callback_data":`/calc ${coin} ${amt} 1`},{"text":"▼ x0.5" , "callback_data":`/calc ${coin} ${amt} 0.5`}]]
+            let text = `<code>${amount} ${coin} = ?\n\nUSD : ${USD}\nETH : ${ETH}\nLTC : ${LTC}\nBNB : ${BNB}\nINR : ${INR}\n</code>\n<b><a href='${ads.url}'>${ads.text}</a></b>`;
+            bot.editMessageText(text,{chat_id:msg.message.chat.id,message_id:msg.message.message_id,reply_markup:{inline_keyboard:key},parse_mode:"html",disable_web_page_preview:true})
+            return
+        }catch(error){
+            console.log(error);
+            bot.sendMessage(msg.message.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html"});
+        }
+    }
+
 })
