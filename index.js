@@ -33,25 +33,31 @@ bot.onText(/\/start/i,async (msg)=>{
             let name = msg.chat.first_name ?? msg.chat.title
             await auth.user.insertOne(obj)
             const total = await auth.user.countDocuments()
-            bot.sendMessage(process.env.ADMIN_ID,`<b>TOTAL_USER : </b><code>[${total}]</code>\n\n<b>FIRST_NAME : <a href="tg://user?id=${msg.chat.id}">${name}</a>\nCHAT_ID : </b><code>@${msg.chat.username}</code>\nCHAT_ID : </b><code>${msg.chat.id}</code>`,{parse_mode:"html"})
+            bot.sendMessage(process.env.ADMIN_ID,`<b>TOTAL_USER : </b><code>[${total}]</code>\n\n<b>FIRST_NAME : <a href="tg://user?id=${msg.chat.id}">${name}</a>\nCHAT_ID : </b><code>@${msg.chat.username}</code>\nCHAT_ID : </b><code>${msg.chat.id}</code>`,{parse_mode:"html",reply_to_message_id:msg.message_id})
         }
         return
     }catch(error){
         console.log(error)
-        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html"});
+        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html",reply_to_message_id:msg.message_id});
         return
     }
 })
 
 bot.onText(/\/help/i,async (msg)=>{
-    if(msg.chat.type=="private"){
-        let text = `<code>=> /p | /price : Get price of coin\n=> /convert | /conv | /cnv : Convert coins\n=> /mp | /multiple | /multi : Get multiple prices\n=> /calc : Calculate prices</code>`
-        bot.sendMessage(msg.chat.id,text,{parse_mode:"html"})
-    }else{
-        let text = `<b><a href="https://t.me/${config.BOT_USERNAME}">Open me private</a></b>`
-        bot.sendMessage(msg.chat.id,text,{parse_mode:"html"})
+    try{
+        if(msg.chat.type=="private"){
+            let text = `<code>=> /p | /price : Get price of coin\n=> /convert | /conv | /cnv : Convert coins\n=> /mp | /multiple | /multi : Get multiple prices\n=> /calc : Calculate prices</code>`
+            bot.sendMessage(msg.chat.id,text,{parse_mode:"html",reply_to_message_id:msg.message_id})
+        }else{
+            let text = `<b><a href="https://t.me/${config.BOT_USERNAME}">Open me private</a></b>`
+            bot.sendMessage(msg.chat.id,text,{parse_mode:"html",reply_to_message_id:msg.message_id})
+        }
+        return
+    }catch(error){
+        console.log(error)
+        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html",reply_to_message_id:msg.message_id});
+        return
     }
-    return
 })
 
 bot.onText(/\/p|\/price/i,async (msg)=>{
@@ -111,7 +117,7 @@ bot.onText(/\/p|\/price/i,async (msg)=>{
         return
     }catch(error){
         console.log(error);
-        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html"});
+        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html",reply_to_message_id:msg.message_id});
         return
     }
     
@@ -157,11 +163,11 @@ bot.onText(/\/conv|\/convert|\/cnv/i,async (msg)=>{
         result = result[to]
         const TOT_PRICE = (amt * result).toFixed(6)
         const text = `<code>${amt} ${fr}: ${TOT_PRICE} ${to}</code>`
-        bot.sendMessage(msg.chat.id,text,{reply_to_message_id:msg.message_id,parse_mode:"html",disable_web_page_preview:true})
+        bot.sendMessage(msg.chat.id,text,{reply_to_message_id:msg.message_id,parse_mode:"html",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
         return
     }catch(error){
-        console.log(error);
-        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html"});
+        console.log(error)
+        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html",reply_to_message_id:msg.message_id});
         return
     }
     
@@ -197,11 +203,11 @@ bot.onText(/\/mp|\/multi|\/multiple/i,async (msg)=>{
             });
             text += `<code>\n${amt} ${key}: ${TOT_PRICE} USDT\nHIGH 24H: ${HIGH24HOUR}  USDT\nLOW 24H: ${LOW24HOUR}  USDT\n1H: ${CHANGEPCTHOUR}%\n24H: ${CHANGEPCT24HOUR}%\nM-CAP: ${MKTCAP}  USDT\nSUPPLY: ${SUPPLY}  ${key}</code>\n`
         }
-        bot.sendMessage(msg.chat.id,`${text}<b><a href="${ads.url}">${ads.text}</a></b>`,{parse_mode:"html",disable_web_page_preview:true})
+        bot.sendMessage(msg.chat.id,`${text}<b><a href="${ads.url}">${ads.text}</a></b>`,{parse_mode:"html",reply_to_message_id:msg.message_id,disable_web_page_preview:true,reply_to_message_id:msg.message_id})
         return
     }catch(error){
-        console.log(error);
-        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html"});
+        console.log(error)
+        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html",reply_to_message_id:msg.message_id});
         return
     }
 })
@@ -215,11 +221,12 @@ bot.onText(/\/gas/i,async (msg)=>{
         const fast = parseInt(response.fast)/10;
         const fastest = parseInt(response.fastest)/10;
         const text = `<b>🔆 Ethereum Gas Price\n🚁 Safe Low :</b> <code>${safelow} Gwei &lt; 30m</code>\n<b>✈️ Average :</b> <code>${avg} Gwei &lt; 5m</code>\n<b>🚀 Fast :</b> <code>${fast} Gwei &lt; 2m</code>\n<b>🛰️ Fastest :</b> <code>${fastest} Gwei &lt; 30s</code>\n<b><a href='${ads.url}'>${ads.text}</a></b>`
-        bot.sendMessage(msg.chat.id,text,{parse_mode:"html",disable_web_page_preview:true})
+        bot.sendMessage(msg.chat.id,text,{parse_mode:"html",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
         return;
     }catch(error){
-        console.log(error);
-        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html"});
+        console.log(error)
+        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html",reply_to_message_id:msg.message_id});
+        return
     }
 })
 
@@ -268,13 +275,36 @@ bot.onText(/\/calc/,async (msg)=>{
         let INR = (result[coin]["INR"]).toFixed(6)
         let key = [[{"text":"▲ x2.0" , "callback_data":`/calc ${coin} ${amt} 2`},{"text":"🔄" , "callback_data":`/calc ${coin} ${amt} 1`},{"text":"▼ x0.5" , "callback_data":`/calc ${coin} ${amt} 0.5`}]]
         let text = `<code>${amount} ${coin} = ?\n\nUSD : ${USD}\nETH : ${ETH}\nLTC : ${LTC}\nBNB : ${BNB}\nINR : ${INR}\n</code>\n<b><a href='${ads.url}'>${ads.text}</a></b>`;
-        bot.sendMessage(msg.chat.id,text,{reply_markup:{inline_keyboard:key},parse_mode:"html",disable_web_page_preview:true})
+        bot.sendMessage(msg.chat.id,text,{reply_markup:{inline_keyboard:key},parse_mode:"html",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
         let timer = Math.floor(new Date().getTime()/1000)
         await auth.user.updateOne({chat_id:msg.chat.id},{$set:{timer:timer+60}})
         return
     }catch(error){
-        console.log(error);
-        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html"});
+        console.log(error)
+        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html",reply_to_message_id:msg.message_id});
+        return
+    }
+})
+
+bot.onText(/\/bio|\/desc|\/decription|describe/i,async (msg)=>{
+    try{
+        let input = msg.text.toLocaleLowerCase()
+        if(input=="/bio" || input=="/desc" || input=="/description" || input=="/describe"){
+            coin="BTC"
+        }else{
+            coin=input.toLocaleUpperCase().replace(/\s+/gm," ").split(" ")
+            coin.shift()
+            coin=coin[0]
+        }
+        let res = await fetch(`https://min-api.cryptocompare.com/data/all/coinlist`)
+        let response = await res.json()
+        let desc = response.Data[coin].Description
+        bot.sendMessage(msg.chat.id,desc,{parse_mode:"HTML",reply_to_message_id:msg.message_id})
+        return
+    }catch(error){
+        console.log(error)
+        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html",reply_to_message_id:msg.message_id});
+        return
     }
 })
 
@@ -291,12 +321,11 @@ bot.onText(/\/broadcast/i,async (msg)=>{
         }
         bot.sendMessage(process.env.ADMIN_ID,"<b>✅ Broadcasted to : </b><code>"+count+"</code>",{parse_mode:"html"})
     }catch(error){
-        console.log(error);
-        bot.sendMessage(process.env.ADMIN_ID,`<b>❌ Error Happend!\n\nCommand /broadcast\nBy : <a href="tg://user?id=${msg.chat.id}">${msg.chat.first_name}</a></b>`,{parse_mode:"html",disable_web_page_preview:true})
+        console.log(error)
+        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html",reply_to_message_id:msg.message_id});
         return
     }
 })
-
 
 
 bot.on("callback_query",async (msg)=>{
@@ -336,9 +365,7 @@ bot.on("callback_query",async (msg)=>{
             return
         }catch(error){
             console.log(error)
-            bot.sendMessage(msg.message.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html"});
             bot.answerCallbackQuery(msg.id, {text: `❌ Error Happend!`})
-            bot.sendMessage(process.env.ADMIN_ID,`<b>❌ Error Happend!\n\nCommand /p or /price callback\nBy : <a href="tg://user?id=${msg.message.chat.id}">${msg.message.chat.first_name}</a></b>`,{parse_mode:"html",disable_web_page_preview:true})
             return
         }
     }
@@ -369,8 +396,9 @@ bot.on("callback_query",async (msg)=>{
             bot.editMessageText(text,{chat_id:msg.message.chat.id,message_id:msg.message.message_id,reply_markup:{inline_keyboard:key},parse_mode:"html",disable_web_page_preview:true})
             return
         }catch(error){
-            console.log(error);
-            bot.sendMessage(msg.message.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html"});
+            console.log(error)
+            bot.answerCallbackQuery(msg.id, {text: `❌ Error Happend!`})
+            return
         }
     }
 
