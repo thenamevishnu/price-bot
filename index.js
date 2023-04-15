@@ -21,7 +21,7 @@ bot.onText(/\/start/i,async (msg)=>{
     try{
         bot.sendChatAction(msg.chat.id,"typing")
         const chat_id = msg.chat.id
-        const text = `<b>Hi ${msg.chat.first_name} 👋\nI am ${config.BOT_USERNAME}\nI can help you get the crypto data just by command!\nNeed help ? /help</b>`
+        const text = `<b>Hi ${msg.from.first_name} 👋\nI am ${config.BOT_USERNAME}\nI can help you get the crypto data just by command!\nNeed help ? /help</b>`
         const key = [[{"text":"➕ Add To Group","url":`https://telegram.me/${config.BOT_USERNAME}?startgroup=true`}]]
         bot.sendMessage(chat_id,text,{reply_markup:{inline_keyboard:key},parse_mode:"html"})
         const user = await auth.user.findOne({chat_id:msg.chat.id})
