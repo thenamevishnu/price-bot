@@ -220,7 +220,7 @@ bot.onText(/\/tv|\/tradingview/i,async (msg)=>{
                 }else{
                     day = "D"
                 }
-            }else{
+            }else if(params[0] && params[1] && params[2] && params[3]){
                 from = params[0]
                 to = params[1]
                 day = params[2]
