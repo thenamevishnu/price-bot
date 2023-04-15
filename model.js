@@ -29,6 +29,10 @@ const users = new mongoose.Schema({
     timer:{
         type:Number,
         required:true
+    },
+    pro:{
+        type:Boolean,
+        required:true
     }
 })
 
