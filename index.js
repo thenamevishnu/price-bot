@@ -343,6 +343,9 @@ bot.onText(/\/calc/,async (msg)=>{
                 }else if(!isNaN(coin[0]) && !isNaN(coin[1])){
                     amt = parseFloat(coin[0])
                     coin = "BTC"
+                }else{
+                    amt = 1
+                    coin = "BTC"
                 }
             }
         }
@@ -376,7 +379,7 @@ bot.onText(/\/bio|\/desc|\/decription|describe/i,async (msg)=>{
         }else{
             coin=input.toLocaleUpperCase().replace(/\s+/gm," ").split(" ")
             coin.shift()
-            coin=coin[0]
+            coin=coin[0] ?? "BTC"
         }
         let res = await fetch(`https://min-api.cryptocompare.com/data/all/coinlist`)
         let response = await res.json()
