@@ -49,7 +49,7 @@ bot.onText(/\/help/i,async (msg)=>{
     try{
         bot.sendChatAction(msg.chat.id,"typing")
         if(msg.chat.type=="private"){
-            let text = `<code>=> /p | /price : Get price of coin\n=> /convert | /conv | /cnv : Convert coins\n=> /mp | /multiple | /multi : Get multiple prices\n=> /calc : Calculate prices\n=> /desc | /description : Description of a coin\n=> /cc | /tv : get trading view chart</code>`
+            let text = `<code>=> /p | /price : Get price of coin\n=> /convert | /conv | /cnv : Convert coins\n=> /mp | /multiple | /multi : Get multiple prices\n=> /calc : Calculate prices\n=> /desc | /description : Description of a coin\n=> /tv | /tradingview : get trading view chart</code>`
             bot.sendMessage(msg.chat.id,text,{parse_mode:"html",reply_to_message_id:msg.message_id})
         }else{
             let text = `<b><a href="https://t.me/${config.BOT_USERNAME}">Open me private</a></b>`
@@ -178,7 +178,7 @@ bot.onText(/\/conv|\/convert|\/cnv/i,async (msg)=>{
     
 })
 
-bot.onText(/\/c|\/cc|\/chart|\/ch|\/tv/i,async (msg)=>{
+bot.onText(/\/tv|\/tradingview/i,async (msg)=>{
     try{
         let data = msg.text.toLocaleLowerCase()
         let params
@@ -188,7 +188,7 @@ bot.onText(/\/c|\/cc|\/chart|\/ch|\/tv/i,async (msg)=>{
         let exch = "BINANCE"
         let day = "D"
         let newSet = new Set(["D","W","M"])
-        if(data!="/c" && data!="/cc" && data!="/ch" && data!="/chart" && data!="/tv"){
+        if(data!="/tv" && data!="/tradingview"){
             bot.sendChatAction(msg.chat.id,"upload_photo")
             params = data.toLocaleUpperCase().replace(/\s+/gm," ").split(" ")
             params.shift()
@@ -228,7 +228,7 @@ bot.onText(/\/c|\/cc|\/chart|\/ch|\/tv/i,async (msg)=>{
             }
         }else{
             bot.sendChatAction(msg.chat.id,"typing")
-            let text = `<b>Command</b>\n<code>=> /tv , /c , /cc , /chart</code>\n\n<b>Usage</b>\n<code>=> /tv {from-coin} {to-coin} {interval} {exchange}</code>\n\n<code>=> From Coin : Eg- BTC\n=> To Coin : Eg- USDT\n=> Interval : D - Day , W - Week , M - Month\n=> Exchange : Eg- Binance,Bitrue,etc.</code>`
+            let text = `<b>Command</b>\n<code>=> /tv , /tradingview</code>\n\n<b>Usage</b>\n<code>=> /tv {from-coin} {to-coin} {interval} {exchange}</code>\n\n<code>=> From Coin : Eg- BTC\n=> To Coin : Eg- USDT\n=> Interval : D - Day , W - Week , M - Month\n=> Exchange : Eg- Binance,Bitrue,etc.</code>`
             bot.sendMessage(msg.chat.id,text,{parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
             return
         }
