@@ -260,8 +260,9 @@ bot.onText(/\/mp|\/multi|\/multiple/i,async (msg)=>{
         }else{
             coin = input.toLocaleUpperCase().replace(/\s+/gm," ").split(" ")
             coin.shift()
-            coin=coin.join(",") ?? "BTC,ETH"
+            coin=coin.join(",")
         }
+        coin=coin ? coin : "BTC,ETH"
         amt=1
         const data = await fetch(`https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${coin}&tsyms=USDT`)
         let response = await data.json()
