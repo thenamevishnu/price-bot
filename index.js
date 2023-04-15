@@ -188,7 +188,7 @@ bot.onText(/\/tv|\/tradingview/i,async (msg)=>{
         let exch = "BINANCE"
         let day = "D"
         let newSet = new Set(["D","W","M"])
-        if(data!="/tv" && data!="/tradingview"){
+        if(data!="/tv" && data!="/tradingview" && !data.includes("@")){
             bot.sendChatAction(msg.chat.id,"upload_photo")
             params = data.toLocaleUpperCase().replace(/\s+/gm," ").split(" ")
             params.shift()
