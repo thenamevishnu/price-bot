@@ -180,59 +180,69 @@ bot.onText(/\/conv|\/convert|\/cnv/i,async (msg)=>{
 
 bot.onText(/\/c|\/cc|\/chart|\/ch|\/tv/i,async (msg)=>{
     try{
-        bot.sendChatAction(msg.chat.id,"upload_photo")
         let data = msg.text.toLocaleLowerCase()
         let params
-        let from
-        let to 
-        let day
-        let exch
+        let from = "BTC"
+        let to = "USDT"
         let theme = "dark"
-        let times = new Set(["1","3","5","15","30","60","120","180","240"])
-        let days = new Set(["d","w"])
-        if(data=="/c" || data=="/cc" || data=="/ch" || data=="/chart" || data=="/tv"){
-            from="BTC"
-            to="USDT"
-            day="D"
-            exch="BINANCE"
-        }else{
+        let exch = "BINANCE"
+        let day = "D"
+        let newSet = new Set(["D","W","M"])
+        if(data!="/c" && data!="/cc" && data!="/ch" && data!="/chart" && data!="/tv"){
+            bot.sendChatAction(msg.chat.id,"upload_photo")
             params = data.toLocaleUpperCase().replace(/\s+/gm," ").split(" ")
             params.shift()
             if(params[0] && !params[1] && !params[2] && !params[3]){
-                from=params[0]
-                to="USDT"
-                day="D"
-                exch="BINANCE"
-            }else
-            if(params[0] && params[1] && !params[2] && !params[3]){
-                from=params[0]
-                to=params[1]
-                day="D"
-                exch="BINANCE"
-            }else
-            if(params[0] && params[1] && params[2] && !params[3]){
-                from=params[0]
-                to=params[1]
-                day=days.has((params[2].toLocaleLowerCase().replace(/[^dw]/gm,""))[0]) ? (params[2].toLocaleLowerCase().replace(/[^dw]/gm,""))[0] : times.has(params[2].toLocaleLowerCase().replace(/[^0-9]/gm,"")) ? params[2].toLocaleLowerCase().replace(/[^0-9]/gm,"") : "D"
-                day=day.toLocaleUpperCase()
-                exch="BINANCE"
+                from = params[0]
+            }else if(params[0] && params[1] && !params[2] && !params[3]){
+                from = params[0]
+                if(newSet.has(params[1])){
+                    to = "USDT"
+                    day = params[1]
+                }else if(!newSet.has(params[1]) && params[1].length==1){
+                    to = "USDT"
+                    day = "D"
+                }else if(params[1].length > 4){
+                    exch = params[1]
+                    to = "USDT"
+                }else{
+                    to = params[1]
+                }
+            }else if(params[0] && params[1] && params[2] && !params[3]){
+                from = params[0]
+                to = params[1]
+                if(newSet.has(params[2])){
+                    day = params[2]
+                }else if(!newSet.has(params[2]) && params[2].length==1){
+                    day = "D"
+                }else if(params[2].length > 4){
+                    exch = params[2]
+                }else{
+                    day = "D"
+                }
             }else{
-                from=params[0]
-                to=params[1]
-                day=days.has((params[2].toLocaleLowerCase().replace(/[^dw]/gm,""))[0]) ? (params[2].toLocaleLowerCase().replace(/[^dw]/gm,""))[0] : times.has(params[2].toLocaleLowerCase().replace(/[^0-9]/gm,"")) ? params[2].toLocaleLowerCase().replace(/[^0-9]/gm,"") : "D"
-                day=day.toLocaleUpperCase()
-                exch=params[3]
+                from = params[0]
+                to = params[1]
+                day = params[2]
+                exch = params[3]
             }
+        }else{
+            bot.sendChatAction(msg.chat.id,"typing")
+            let text = `<b>Command</b>\n<code>=> /tv , /c , /cc , /chart</code>\n\n<b>Usage</b>\n<code>=> /tv {from-coin} {to-coin} {interval} {exchange}</code>\n\n<code>=> From Coin : Eg- BTC\n=> To Coin : Eg- USDT\n=> Interval : D - Day , W - Week , M - Month\n=> Exchange : Eg- Binance,Bitrue,etc.</code>`
+            bot.sendMessage(msg.chat.id,text,{parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
+            return
         }
         let time = new Date().getTime()
         let url = `https://api.crypto-twilight.com/tradingView/index.php?theme=${theme}&interval=${day}&from=${from}&to=${to}&exchange=${exch}&time=${time}`
         const browser = await puppeteer.launch({headless: true});
         const page = await browser.newPage();
         await page.goto(url);
-        await page.setViewport({width: 1000, height: 500});
-        let response = await page.screenshot();
-        bot.sendPhoto(msg.chat.id,response,{caption:`<b><a href="${ads.url}">${ads.text}</a></b>`,disable_web_page_preview:true,parse_mode:"html",reply_to_message_id:msg.message_id})
-        await browser.close();
+        setTimeout(async ()=>{
+            await page.setViewport({width: 1000, height: 500});
+            let response = await page.screenshot();
+            await bot.sendPhoto(msg.chat.id,response,{caption:`<b><a href="${ads.url}">${ads.text}</a></b>`,disable_web_page_preview:true,parse_mode:"html",reply_to_message_id:msg.message_id})
+            await browser.close();
+        },500)
         return
     }catch(error){
         console.log(error)
@@ -478,3 +488,4 @@ bot.on("callback_query",async (msg)=>{
     }
 
 })
+
