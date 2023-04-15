@@ -5,6 +5,7 @@ const config = require("./config")
 const millify = require("millify").millify
 const fetch = require("node-fetch")
 const Telegram = require("node-telegram-bot-api")
+const puppeteer = require('puppeteer');
 
 
 const bot = new Telegram(process.env.BOT_TOKEN,{polling:true})
@@ -18,6 +19,7 @@ let ads = config.ADS[rand(0,0)]
 
 bot.onText(/\/start/i,async (msg)=>{
     try{
+        bot.sendChatAction(msg.chat.id,"typing")
         const chat_id = msg.chat.id
         const text = `<b>Hi ${msg.chat.first_name} 👋\nI am ${config.BOT_USERNAME}\nI can help you get the crypto data just by command!\nNeed help ? /help</b>`
         const key = [[{"text":"➕ Add To Group","url":`https://telegram.me/${config.BOT_USERNAME}?startgroup=true`}]]
@@ -38,15 +40,16 @@ bot.onText(/\/start/i,async (msg)=>{
         return
     }catch(error){
         console.log(error)
-        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html",reply_to_message_id:msg.message_id});
+        bot.sendMessage(msg.chat.id,config.error_message,{parse_mode:"html",reply_to_message_id:msg.message_id});
         return
     }
 })
 
 bot.onText(/\/help/i,async (msg)=>{
     try{
+        bot.sendChatAction(msg.chat.id,"typing")
         if(msg.chat.type=="private"){
-            let text = `<code>=> /p | /price : Get price of coin\n=> /convert | /conv | /cnv : Convert coins\n=> /mp | /multiple | /multi : Get multiple prices\n=> /calc : Calculate prices\n=> /desc | /description : Description of a coin</code>`
+            let text = `<code>=> /p | /price : Get price of coin\n=> /convert | /conv | /cnv : Convert coins\n=> /mp | /multiple | /multi : Get multiple prices\n=> /calc : Calculate prices\n=> /desc | /description : Description of a coin\n=> /cc | /tv : get trading view chart</code>`
             bot.sendMessage(msg.chat.id,text,{parse_mode:"html",reply_to_message_id:msg.message_id})
         }else{
             let text = `<b><a href="https://t.me/${config.BOT_USERNAME}">Open me private</a></b>`
@@ -55,13 +58,14 @@ bot.onText(/\/help/i,async (msg)=>{
         return
     }catch(error){
         console.log(error)
-        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html",reply_to_message_id:msg.message_id});
+        bot.sendMessage(msg.chat.id,config.error_message,{parse_mode:"html",reply_to_message_id:msg.message_id});
         return
     }
 })
 
 bot.onText(/\/p|\/price/i,async (msg)=>{
     try{
+        bot.sendChatAction(msg.chat.id,"typing")
         let data = msg.text.toLocaleLowerCase();
         let coin
         if(data == "/p" || data == "/price"){
@@ -117,7 +121,7 @@ bot.onText(/\/p|\/price/i,async (msg)=>{
         return
     }catch(error){
         console.log(error);
-        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html",reply_to_message_id:msg.message_id});
+        bot.sendMessage(msg.chat.id,config.error_message,{parse_mode:"html",reply_to_message_id:msg.message_id});
         return
     }
     
@@ -125,6 +129,7 @@ bot.onText(/\/p|\/price/i,async (msg)=>{
 
 bot.onText(/\/conv|\/convert|\/cnv/i,async (msg)=>{
     try{
+        bot.sendChatAction(msg.chat.id,"typing")
         let data = msg.text.toLocaleLowerCase();
         let coin
         if(data == "/conv" || data == "/convert" || data == "/conv"){
@@ -167,14 +172,82 @@ bot.onText(/\/conv|\/convert|\/cnv/i,async (msg)=>{
         return
     }catch(error){
         console.log(error)
-        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html",reply_to_message_id:msg.message_id});
+        bot.sendMessage(msg.chat.id,config.error_message,{parse_mode:"html",reply_to_message_id:msg.message_id});
         return
     }
     
 })
 
+bot.onText(/\/c|\/cc|\/chart|\/ch|\/tv/i,async (msg)=>{
+    try{
+        bot.sendChatAction(msg.chat.id,"upload_photo")
+        let data = msg.text.toLocaleLowerCase()
+        let params
+        let from
+        let to 
+        let day
+        let exch
+        let theme = "dark"
+        let times = new Set(["1","3","5","15","30","60","120","180","240"])
+        let days = new Set(["d","w"])
+        if(data=="/c" || data=="/cc" || data=="/ch" || data=="/chart" || data=="/tv"){
+            from="BTC"
+            to="USDT"
+            day="D"
+            exch="BINANCE"
+        }else{
+            params = data.toLocaleUpperCase().replace(/\s+/gm," ").split(" ")
+            params.shift()
+            if(params[0] && !params[1] && !params[2] && !params[3]){
+                from=params[0]
+                to="USDT"
+                day="D"
+                exch="BINANCE"
+            }else
+            if(params[0] && params[1] && !params[2] && !params[3]){
+                from=params[0]
+                to=params[1]
+                day="D"
+                exch="BINANCE"
+            }else
+            if(params[0] && params[1] && params[2] && !params[3]){
+                from=params[0]
+                to=params[1]
+                day=days.has((params[2].toLocaleLowerCase().replace(/[^dw]/gm,""))[0]) ? (params[2].toLocaleLowerCase().replace(/[^dw]/gm,""))[0] : times.has(params[2].toLocaleLowerCase().replace(/[^0-9]/gm,"")) ? params[2].toLocaleLowerCase().replace(/[^0-9]/gm,"") : "D"
+                day=day.toLocaleUpperCase()
+                exch="BINANCE"
+            }else{
+                from=params[0]
+                to=params[1]
+                day=days.has((params[2].toLocaleLowerCase().replace(/[^dw]/gm,""))[0]) ? (params[2].toLocaleLowerCase().replace(/[^dw]/gm,""))[0] : times.has(params[2].toLocaleLowerCase().replace(/[^0-9]/gm,"")) ? params[2].toLocaleLowerCase().replace(/[^0-9]/gm,"") : "D"
+                day=day.toLocaleUpperCase()
+                exch=params[3]
+            }
+        }
+        let time = new Date().getTime()
+        console.log(from, to, day, exch);
+        let url = `https://api.crypto-twilight.com/tradingView/index.php?theme=${theme}&interval=${day}&from=${from}&to=${to}&exchange=${exch}&time=${time}`
+        let thisData  = await bot.sendPhoto(msg.chat.id,`https://res.cloudinary.com/teepublic/image/private/s--K_rZrNsA--/t_Preview/b_rgb:191919,c_lpad,f_jpg,h_630,q_90,w_1200/v1498165258/production/designs/1687129_1.jpg`,{caption:`<b><a href="${ads.url}">${ads.text}</a></b>`,disable_web_page_preview:true,reply_to_message_id:msg.message_id,parse_mode:"html"})
+        const browser = await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox']});
+        const page = await browser.newPage();
+        await page.goto(url);
+        await page.setViewport({width: 1000, height: 500});
+        let response = await page.screenshot();
+        bot.deleteMessage(msg.chat.id,thisData.message_id)
+        bot.sendChatAction(msg.chat.id,"upload_photo")
+        bot.sendPhoto(msg.chat.id,response,{caption:`<b><a href="${ads.url}">${ads.text}</a></b>`,disable_web_page_preview:true,parse_mode:"html",reply_to_message_id:msg.message_id})
+        await browser.close();
+        return
+    }catch(error){
+        console.log(error)
+        bot.sendMessage(msg.chat.id,config.error_message,{parse_mode:"html",reply_to_message_id:msg.message_id});
+        return
+    }
+})
+
 bot.onText(/\/mp|\/multi|\/multiple/i,async (msg)=>{
     try{
+        bot.sendChatAction(msg.chat.id,"typing")
         let input = msg.text.toLocaleLowerCase()
         if(input=="/mp" || input=="/multi" ||input=="/multiple"){
             coin="BTC,ETH"
@@ -207,13 +280,14 @@ bot.onText(/\/mp|\/multi|\/multiple/i,async (msg)=>{
         return
     }catch(error){
         console.log(error)
-        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html",reply_to_message_id:msg.message_id});
+        bot.sendMessage(msg.chat.id,config.error_message,{parse_mode:"html",reply_to_message_id:msg.message_id});
         return
     }
 })
 
 bot.onText(/\/gas/i,async (msg)=>{
     try{
+        bot.sendChatAction(msg.chat.id,"typing")
         const data = await fetch("https://ethgasstation.info/json/ethgasAPI.json")
         const response = await data.json()
         const safelow = parseInt(response.safeLow)/10;
@@ -225,13 +299,14 @@ bot.onText(/\/gas/i,async (msg)=>{
         return;
     }catch(error){
         console.log(error)
-        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html",reply_to_message_id:msg.message_id});
+        bot.sendMessage(msg.chat.id,config.error_message,{parse_mode:"html",reply_to_message_id:msg.message_id});
         return
     }
 })
 
 bot.onText(/\/calc/,async (msg)=>{
     try{
+        bot.sendChatAction(msg.chat.id,"typing")
         let data = msg.text.toLocaleLowerCase()
         let amt
         let coin
@@ -281,13 +356,14 @@ bot.onText(/\/calc/,async (msg)=>{
         return
     }catch(error){
         console.log(error)
-        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html",reply_to_message_id:msg.message_id});
+        bot.sendMessage(msg.chat.id,config.error_message,{parse_mode:"html",reply_to_message_id:msg.message_id});
         return
     }
 })
 
 bot.onText(/\/bio|\/desc|\/decription|describe/i,async (msg)=>{
     try{
+        bot.sendChatAction(msg.chat.id,"typing")
         let input = msg.text.toLocaleLowerCase()
         if(input=="/bio" || input=="/desc" || input=="/description" || input=="/describe"){
             coin="BTC"
@@ -303,13 +379,14 @@ bot.onText(/\/bio|\/desc|\/decription|describe/i,async (msg)=>{
         return
     }catch(error){
         console.log(error)
-        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html",reply_to_message_id:msg.message_id});
+        bot.sendMessage(msg.chat.id,config.error_message,{parse_mode:"html",reply_to_message_id:msg.message_id});
         return
     }
 })
 
 bot.onText(/\/broadcast/i,async (msg)=>{
     try{
+        bot.sendChatAction(msg.chat.id,"typing")
         if(msg.chat.id != process.env.ADMIN_ID){
             return
         }
@@ -322,7 +399,7 @@ bot.onText(/\/broadcast/i,async (msg)=>{
         bot.sendMessage(process.env.ADMIN_ID,"<b>✅ Broadcasted to : </b><code>"+count+"</code>",{parse_mode:"html"})
     }catch(error){
         console.log(error)
-        bot.sendMessage(msg.chat.id,`<i>❌ Error Happend!</i>`,{parse_mode:"html",reply_to_message_id:msg.message_id});
+        bot.sendMessage(msg.chat.id,config.error_message,{parse_mode:"html",reply_to_message_id:msg.message_id});
         return
     }
 })
@@ -333,6 +410,7 @@ bot.on("callback_query",async (msg)=>{
 
     if(action[0]=="/p"){
         try{
+            bot.sendChatAction(msg.message.chat.id,"typing")
             let timer = await auth.user.findOne({chat_id:msg.message.chat.id})
             let now = Math.floor(new Date().getTime()/1000)
             let sec =timer.timer - now
@@ -372,6 +450,7 @@ bot.on("callback_query",async (msg)=>{
 
     if(action[0]=="/calc"){
         try{
+            bot.sendChatAction(msg.message.chat.id,"typing")
             let coin = action[1]
             let amt = parseFloat(action[2]) * parseFloat(action[3])
             if(action[3]==1){
