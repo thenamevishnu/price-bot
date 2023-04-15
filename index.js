@@ -225,17 +225,12 @@ bot.onText(/\/c|\/cc|\/chart|\/ch|\/tv/i,async (msg)=>{
             }
         }
         let time = new Date().getTime()
-        console.log(from, to, day, exch);
         let url = `https://api.crypto-twilight.com/tradingView/index.php?theme=${theme}&interval=${day}&from=${from}&to=${to}&exchange=${exch}&time=${time}`
-        let thisData  = await bot.sendPhoto(msg.chat.id,`https://res.cloudinary.com/teepublic/image/private/s--K_rZrNsA--/t_Preview/b_rgb:191919,c_lpad,f_jpg,h_630,q_90,w_1200/v1498165258/production/designs/1687129_1.jpg`,{caption:`<b><a href="${ads.url}">${ads.text}</a></b>`,disable_web_page_preview:true,reply_to_message_id:msg.message_id,parse_mode:"html"})
-        const browser = await puppeteer.launch({
-            headless: true});
+        const browser = await puppeteer.launch({headless: true});
         const page = await browser.newPage();
         await page.goto(url);
         await page.setViewport({width: 1000, height: 500});
         let response = await page.screenshot();
-        bot.deleteMessage(msg.chat.id,thisData.message_id)
-        bot.sendChatAction(msg.chat.id,"upload_photo")
         bot.sendPhoto(msg.chat.id,response,{caption:`<b><a href="${ads.url}">${ads.text}</a></b>`,disable_web_page_preview:true,parse_mode:"html",reply_to_message_id:msg.message_id})
         await browser.close();
         return
