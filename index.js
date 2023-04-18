@@ -49,7 +49,7 @@ bot.onText(/\/help/i,async (msg)=>{
     try{
         bot.sendChatAction(msg.chat.id,"typing")
         if(msg.chat.type=="private"){
-            let text = `<code>=> /p | /price : Get price of coin\n=> /convert | /conv | /cnv : Convert coins\n=> /mp | /multiple | /multi : Get multiple prices\n=> /calc : Calculate prices\n=> /desc | /description : Description of a coin\n=> /tv | /tradingview : get trading view chart</code>`
+            let text = `<code>=> /p | /price : Get price of coin\n=> /convert | /conv | /cnv : Convert coins\n=> /mp | /multiple | /multi : Get multiple prices\n=> /calc : Calculate prices\n=> /bio | /desc | /description : Description of a coin\n=> /tv | /tradingview : get trading view chart\n=> /select : Select random winners\n=> /gas : Get gas price of ETH\n=> /txfee : Tx fee of BTC</code>`
             bot.sendMessage(msg.chat.id,text,{parse_mode:"html",reply_to_message_id:msg.message_id})
         }else{
             let text = `<b><a href="https://t.me/${config.BOT_USERNAME}">Open me private</a></b>`
@@ -311,6 +311,19 @@ bot.onText(/\/gas/i,async (msg)=>{
     }
 })
 
+bot.onText(/\/txfee/,async (msg)=>{
+    const data = await fetch("https://bitcoiner.live/api/fees/estimates/latest")
+    const obj = await data.json()
+    const s = obj.estimates["30"].sat_per_vbyte;
+    const usd = (obj.estimates["30"].total.p2wpkh.usd).toFixed(2)
+    const ss = obj.estimates["60"].sat_per_vbyte;
+    const usdd = (obj.estimates["60"].total.p2wpkh.usd).toFixed(2)
+    const sss = obj.estimates["120"].sat_per_vbyte;
+    const usddd = (obj.estimates["120"].total.p2wpkh.usd).toFixed(2)
+    const text = `<b>🚀 Fast :</b> <code>${s} sat/vB [$${usd}]</code>\n<b>🏍️ Avg :</b> <code>${ss} sat/vB [$${usdd}]</code>\n<b>🚲 Slow :</b> <code>${sss} sat/vB [$${usddd}]</code>\n<b><a href='${ads.url}'>${ads.text}</a></b>`
+    bot.sendMessage(msg.chat.id, text , {parse_mode:"html",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
+})
+
 bot.onText(/\/calc/,async (msg)=>{
     try{
         bot.sendChatAction(msg.chat.id,"typing")
@@ -392,6 +405,62 @@ bot.onText(/\/bio|\/desc|\/decription|describe/i,async (msg)=>{
         bot.sendMessage(msg.chat.id,config.error_message,{parse_mode:"html",reply_to_message_id:msg.message_id});
         return
     }
+})
+
+bot.onText(/\/select/i,async (msg)=>{
+    if(msg.text.toLowerCase() == "/select"){
+        const text = "<i>❌ Invalid format\n\n/select {winner count} {userIDs/UserNames}\n\nNote : UserIDs/UserNames seperate with spaces.</i>"
+        bot.sendMessage(msg.chat.id, text , {parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
+        return
+    }
+    const params = msg.text.replace(/\s+/gm," ").split(" ")
+    params.shift()
+    if(isNaN(params[0])){
+        const text = "<i>❌ Invalid format\n\n/select {winner count} {userIDs/UserNames}\n\nNote : UserIDs/UserNames seperate with spaces.</i>"
+        bot.sendMessage(msg.chat.id, text , {parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
+        return
+    }
+    const winners = params[0]
+    params.shift()
+    if(winners>params.length){
+        const text = "<i>❌ Winner count is greater than total users</i>"
+        bot.sendMessage(msg.chat.id, text , {parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
+        return
+    }
+    if(winners<1){
+        const text = "<i>❌ Minimum 1 winner is requred!</i>"
+        bot.sendMessage(msg.chat.id, text , {parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
+        return
+    }
+    let users = shuffle(params)
+    let i=0
+    let text = "🛸 Random winners by "+config.BOT_NAME
+    while(i<winners){
+        text += "\n"+(i+1)+" ➜ "+users[i]+""
+        i++
+    }
+    function shuffle(array){
+        for(let i=0;i<array.length;i++){
+            const random = Math.floor(Math.random() * array.length)
+            let temp = array[i]
+            array[i] = array[random]
+            array[random] = temp
+        }
+        return array
+    }
+    bot.sendMessage(msg.chat.id,text,{parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
+    return
+})
+
+bot.onText(/\/quote/,async (msg)=>{
+    const data = await fetch("https://type.fit/api/quotes")
+    const response = await data.json()
+    const index = Math.floor(Math.random() * response.length)
+    const quote = response[index].text
+    const auth = response[index].author ?? "Unknown"
+    const text = `<code>${quote}\n- ${auth}</code>`
+    bot.sendMessage(msg.chat.id,text,{parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
+    return
 })
 
 bot.onText(/\/broadcast/i,async (msg)=>{
