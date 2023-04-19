@@ -49,7 +49,7 @@ bot.onText(/\/help/i,async (msg)=>{
     try{
         bot.sendChatAction(msg.chat.id,"typing")
         if(msg.chat.type=="private"){
-            let text = `<code>=> /p | /price : Get price of coin\n=> /convert | /conv | /cnv : Convert coins\n=> /mp | /multiple | /multi : Get multiple prices\n=> /calc : Calculate prices\n=> /bio | /desc | /description : Description of a coin\n=> /tv | /tradingview : get trading view chart\n=> /select : Select random winners\n=> /gas : Get gas price of ETH\n=> /txfee : Tx fee of BTC</code>`
+            let text = `<code>=> /p | /price : Get price of coin\n=> /convert | /conv | /cnv : Convert coins\n=> /mp | /multiple | /multi : Get multiple prices\n=> /calc : Calculate prices\n=> /bio | /desc | /description : Description of a coin\n=> /tv | /tradingview : get trading view chart\n=> /select : Select random winners\n=> /gas : Get gas price of ETH\n=> /txfee : Tx fee of BTC\n=> /advertise : Advertise in bot</code>`
             bot.sendMessage(msg.chat.id,text,{parse_mode:"html",reply_to_message_id:msg.message_id})
         }else{
             let text = `<b><a href="https://t.me/${config.BOT_USERNAME}">Open me private</a></b>`
@@ -331,7 +331,11 @@ bot.onText(/\/txfee/,async (msg)=>{
     }
 })
 
-
+bot.onText(/\/advertise/,async (msg)=>{
+    text = `<code>Contact Us : </code><b>@${config.ADMIN_USERNAME}</b>`
+    bot.sendMessage(msg.chat.id,text,{parse_mode:"html",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
+    return
+})
 
 bot.onText(/\/calc/,async (msg)=>{
     try{
