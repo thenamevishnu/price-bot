@@ -312,17 +312,26 @@ bot.onText(/\/gas/i,async (msg)=>{
 })
 
 bot.onText(/\/txfee/,async (msg)=>{
-    const data = await fetch("https://bitcoiner.live/api/fees/estimates/latest")
-    const obj = await data.json()
-    const s = obj.estimates["30"].sat_per_vbyte;
-    const usd = (obj.estimates["30"].total.p2wpkh.usd).toFixed(2)
-    const ss = obj.estimates["60"].sat_per_vbyte;
-    const usdd = (obj.estimates["60"].total.p2wpkh.usd).toFixed(2)
-    const sss = obj.estimates["120"].sat_per_vbyte;
-    const usddd = (obj.estimates["120"].total.p2wpkh.usd).toFixed(2)
-    const text = `<b>🚀 Fast :</b> <code>${s} sat/vB [$${usd}]</code>\n<b>🏍️ Avg :</b> <code>${ss} sat/vB [$${usdd}]</code>\n<b>🚲 Slow :</b> <code>${sss} sat/vB [$${usddd}]</code>\n<b><a href='${ads.url}'>${ads.text}</a></b>`
-    bot.sendMessage(msg.chat.id, text , {parse_mode:"html",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
+    try{
+        const data = await fetch("https://bitcoiner.live/api/fees/estimates/latest")
+        const obj = await data.json()
+        const s = obj.estimates["30"].sat_per_vbyte;
+        const usd = (obj.estimates["30"].total.p2wpkh.usd).toFixed(2)
+        const ss = obj.estimates["60"].sat_per_vbyte;
+        const usdd = (obj.estimates["60"].total.p2wpkh.usd).toFixed(2)
+        const sss = obj.estimates["120"].sat_per_vbyte;
+        const usddd = (obj.estimates["120"].total.p2wpkh.usd).toFixed(2)
+        const text = `<b>🚀 Fast :</b> <code>${s} sat/vB [$${usd}]</code>\n<b>🏍️ Avg :</b> <code>${ss} sat/vB [$${usdd}]</code>\n<b>🚲 Slow :</b> <code>${sss} sat/vB [$${usddd}]</code>\n<b><a href='${ads.url}'>${ads.text}</a></b>`
+        bot.sendMessage(msg.chat.id, text , {parse_mode:"html",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
+        return
+    }catch(error){
+        console.log(error)
+        bot.sendMessage(msg.chat.id,config.error_message,{parse_mode:"html",reply_to_message_id:msg.message_id});
+        return
+    }
 })
+
+
 
 bot.onText(/\/calc/,async (msg)=>{
     try{
