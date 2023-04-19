@@ -35,7 +35,7 @@ bot.onText(/\/start/i,async (msg)=>{
             let name = msg.chat.first_name ?? msg.chat.title
             await auth.user.insertOne(obj)
             const total = await auth.user.countDocuments()
-            bot.sendMessage(process.env.ADMIN_ID,`<b>TOTAL_USER : </b><code>[${total}]</code>\n\n<b>FIRST_NAME : <a href="tg://user?id=${msg.chat.id}">${name}</a>\nCHAT_ID : </b><code>@${msg.chat.username}</code>\nCHAT_ID : </b><code>${msg.chat.id}</code>`,{parse_mode:"html",reply_to_message_id:msg.message_id})
+            bot.sendMessage(process.env.ADMIN_ID,`<b>TOTAL_USER : </b><code>[${total}]</code>\n\n<b>FIRST_NAME : <a href="tg://user?id=${msg.chat.id}">${name}</a>\nCHAT_ID : </b><code>@${msg.chat.username}</code>\n<b>CHAT_ID : </b><code>${msg.chat.id}</code>`,{parse_mode:"html",reply_to_message_id:msg.message_id})
         }
         return
     }catch(error){
