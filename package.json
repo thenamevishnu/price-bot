@@ -10,7 +10,6 @@
   "license": "ISC",
   "dependencies": {
     "dotenv": "^16.0.3",
-    "free-translate": "^0.6.1",
     "millify": "^6.1.0",
     "mongoose": "^7.0.3",
     "node-fetch": "^2.6.9",

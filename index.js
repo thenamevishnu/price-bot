@@ -6,7 +6,6 @@ const millify = require("millify").millify
 const fetch = require("node-fetch")
 const Telegram = require("node-telegram-bot-api")
 const puppeteer = require('puppeteer');
-const { translate } = require("free-translate")
 
 
 const bot = new Telegram(process.env.BOT_TOKEN,{polling:true})
@@ -50,7 +49,7 @@ bot.onText(/\/help/i,async (msg)=>{
     try{
         bot.sendChatAction(msg.chat.id,"typing")
         if(msg.chat.type=="private"){
-            let text = `<code>=> /p | /price : Get price of coin\n=> /convert | /conv | /cnv : Convert coins\n=> /mp | /multiple | /multi : Get multiple prices\n=> /calc : Calculate prices\n=> /bio | /desc | /description : Description of a coin\n=> /tv | /tradingview : get trading view chart\n=> /select : Select random winners\n=> /gas : Get gas price of ETH\n=> /txfee : Tx fee of BTC\n=> /trans | /translate => Translate Message\n=> /advertise : Advertise in bot</code>`
+            let text = `<code>=> /p | /price : Get price of coin\n=> /convert | /conv | /cnv : Convert coins\n=> /mp | /multiple | /multi : Get multiple prices\n=> /calc : Calculate prices\n=> /bio | /desc | /description : Description of a coin\n=> /tv | /tradingview : get trading view chart\n=> /select : Select random winners\n=> /gas : Get gas price of ETH\n=> /txfee : Tx fee of BTC\n=> /advertise : Advertise in bot</code>`
             bot.sendMessage(msg.chat.id,text,{parse_mode:"html",reply_to_message_id:msg.message_id})
         }else{
             let text = `<b><a href="https://t.me/${config.BOT_USERNAME}">Open me private</a></b>`
@@ -422,69 +421,50 @@ bot.onText(/\/bio|\/desc|\/decription|describe/i,async (msg)=>{
 })
 
 bot.onText(/\/select/i,async (msg)=>{
-    if(msg.text.toLowerCase() == "/select"){
-        const text = "<i>❌ Invalid format\n\n/select {winner count} {userIDs/UserNames}\n\nNote : UserIDs/UserNames seperate with spaces.</i>"
-        bot.sendMessage(msg.chat.id, text , {parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
-        return
-    }
-    const params = msg.text.replace(/\s+/gm," ").split(" ")
-    params.shift()
-    if(isNaN(params[0])){
-        const text = "<i>❌ Invalid format\n\n/select {winner count} {userIDs/UserNames}\n\nNote : UserIDs/UserNames seperate with spaces.</i>"
-        bot.sendMessage(msg.chat.id, text , {parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
-        return
-    }
-    const winners = params[0]
-    params.shift()
-    if(winners>params.length){
-        const text = "<i>❌ Winner count is greater than total users</i>"
-        bot.sendMessage(msg.chat.id, text , {parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
-        return
-    }
-    if(winners<1){
-        const text = "<i>❌ Minimum 1 winner is requred!</i>"
-        bot.sendMessage(msg.chat.id, text , {parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
-        return
-    }
-    let users = shuffle(params)
-    let i=0
-    let text = "🛸 Random winners by "+config.BOT_NAME
-    while(i<winners){
-        text += "\n"+(i+1)+" ➜ "+users[i]+""
-        i++
-    }
-    function shuffle(array){
-        for(let i=0;i<array.length;i++){
-            const random = Math.floor(Math.random() * array.length)
-            let temp = array[i]
-            array[i] = array[random]
-            array[random] = temp
-        }
-        return array
-    }
-    bot.sendMessage(msg.chat.id,text,{parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
-    return
-})
-
-bot.onText(/\/trans/i,async (msg)=>{
     try{
-        const input = msg.text.toLocaleLowerCase()
-        if(!msg?.reply_to_message){
-            bot.sendMessage(msg.chat.id,"<i>Message to translate is not found!</i>",{parse_mode:"HTML",reply_to_message_id:msg.message_id})
+        if(msg.text.toLowerCase() == "/select"){
+            const text = "<i>❌ Invalid format\n\n/select {winner count} {userIDs/UserNames}\n\nNote : UserIDs/UserNames seperate with spaces.</i>"
+            bot.sendMessage(msg.chat.id, text , {parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
             return
         }
-        let to
-        if(input=="/trans" || input=="/translate" || input=="/trad"){
-            to = "en"
-        }else{
-            to = input.replace(/\s+/gm," ").split(" ")
-            to.shift()
-            to = to[0]
-        } 
-        const response = await translate("Hello",{to: "ml"})
-        bot.sendMessage(msg.chat.id,response,{parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
+        const params = msg.text.replace(/\s+/gm," ").split(" ")
+        params.shift()
+        if(isNaN(params[0])){
+            const text = "<i>❌ Invalid format\n\n/select {winner count} {userIDs/UserNames}\n\nNote : UserIDs/UserNames seperate with spaces.</i>"
+            bot.sendMessage(msg.chat.id, text , {parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
+            return
+        }
+        const winners = params[0]
+        params.shift()
+        if(winners>params.length){
+            const text = "<i>❌ Winner count is greater than total users</i>"
+            bot.sendMessage(msg.chat.id, text , {parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
+            return
+        }
+        if(winners<1){
+            const text = "<i>❌ Minimum 1 winner is requred!</i>"
+            bot.sendMessage(msg.chat.id, text , {parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
+            return
+        }
+        let users = shuffle(params)
+        let i=0
+        let text = "🛸 Random winners by "+config.BOT_NAME
+        while(i<winners){
+            text += "\n"+(i+1)+" ➜ "+users[i]+""
+            i++
+        }
+        function shuffle(array){
+            for(let i=0;i<array.length;i++){
+                const random = Math.floor(Math.random() * array.length)
+                let temp = array[i]
+                array[i] = array[random]
+                array[random] = temp
+            }
+            return array
+        }
+        bot.sendMessage(msg.chat.id,text,{parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
         return
-    }catch(error){
+    }catch (error) {
         console.log(error)
         bot.sendMessage(msg.chat.id,config.error_message,{parse_mode:"html",reply_to_message_id:msg.message_id});
         return
@@ -492,14 +472,20 @@ bot.onText(/\/trans/i,async (msg)=>{
 })
 
 bot.onText(/\/quote/,async (msg)=>{
-    const data = await fetch("https://type.fit/api/quotes")
-    const response = await data.json()
-    const index = Math.floor(Math.random() * response.length)
-    const quote = response[index].text
-    const auth = response[index].author ?? "Unknown"
-    const text = `<code>${quote}\n- ${auth}</code>`
-    bot.sendMessage(msg.chat.id,text,{parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
-    return
+    try {
+        const data = await fetch("https://type.fit/api/quotes")
+        const response = await data.json()
+        const index = Math.floor(Math.random() * response.length)
+        const quote = response[index].text
+        const auth = response[index].author ?? "Unknown"
+        const text = `<code>${quote}\n- ${auth}</code>`
+        bot.sendMessage(msg.chat.id,text,{parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
+        return
+    } catch (error) {
+        console.log(error)
+        bot.sendMessage(msg.chat.id,config.error_message,{parse_mode:"html",reply_to_message_id:msg.message_id});
+        return
+    }
 })
 
 bot.onText(/\/broadcast/i,async (msg)=>{
