@@ -6,7 +6,7 @@ const millify = require("millify").millify
 const fetch = require("node-fetch")
 const Telegram = require("node-telegram-bot-api")
 const puppeteer = require('puppeteer');
-const translate = require("translate-google")
+const { translate } = require("free-translate")
 
 
 const bot = new Telegram(process.env.BOT_TOKEN,{polling:true})
@@ -482,7 +482,6 @@ bot.onText(/\/trans/i,async (msg)=>{
             to = to[0]
         }
         const response = await translate(msg.reply_to_message.text,{to: to})
-        console.log(response);
         bot.sendMessage(msg.chat.id,response,{parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
         return
     }catch(error){
