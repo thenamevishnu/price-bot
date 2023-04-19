@@ -475,13 +475,14 @@ bot.onText(/\/trans/i,async (msg)=>{
         }
         let to
         if(input=="/trans" || input=="/translate" || input=="/trad"){
-            to = ["en"]
+            to = "en"
         }else{
             to = input.replace(/\s+/gm," ").split(" ")
             to.shift()
+            to = to[0]
         }
         console.log(to);
-        const response = await translate(msg.reply_to_message.text, {to : ""+to[0]+""})
+        const response = await translate(msg.reply_to_message.text, {to : to})
         console.log(response);
         bot.sendMessage(msg.chat.id,response,{parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
         return
