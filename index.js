@@ -481,7 +481,7 @@ bot.onText(/\/trans/i,async (msg)=>{
             to.shift()
             to = to[0]
         } 
-        const response = await translate(msg.reply_to_message.text,{to: to})
+        const response = await translate("Hello",{to: "ml"})
         bot.sendMessage(msg.chat.id,response,{parse_mode:"HTML",disable_web_page_preview:true,reply_to_message_id:msg.message_id})
         return
     }catch(error){
