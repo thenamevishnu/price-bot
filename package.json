@@ -11,7 +11,7 @@
   "dependencies": {
     "dotenv": "^16.0.3",
     "millify": "^6.1.0",
-    "mongoose": "^7.8.3",
+    "mongoose": "^7.8.4",
     "node-fetch": "^2.6.9",
     "node-telegram-bot-api": "^0.65.1",
     "puppeteer": "^22.15.0"
